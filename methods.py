@@ -125,7 +125,7 @@ def activityInYear(dataFrame, year):
 def sectorPercentage(target_sectors, activity_sectors, sector_percentages):
     # target_sectors is a list of the sectors which we want included in our results
     # 
-    
+    from pandas import isnull
     results = [False] * len(activity_sectors)
     
     for sector in target_sectors:
@@ -138,7 +138,7 @@ def sectorPercentage(target_sectors, activity_sectors, sector_percentages):
     for i in range(len(results)):
         
         if results[i]:
-            if pd.isnull(sector_percentages):
+            if pandas.isnull(sector_percentages):
                 sum_percents = 1
             else:
                 sum_percents += int(sector_percentages[i])
