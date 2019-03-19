@@ -36,7 +36,7 @@ def validDates(dataFrame):
     else:
         dataFrame.at[i, 'valid-dates'] = True
         
-def proporYearDone(datetime):
+def proporYearGone(datetime):
     months = datetime.month
     days = datetime.day
     return ((months * 30) + days ) / 365
@@ -47,7 +47,9 @@ def proporYearToGo(datetime):
     return (365 - ((months * 30) + days )) / 365
         
         
-def activityInYear(dateFrame, year):
+def activityInYear(dataFrame, year):
+    
+    import pandas as pd
     
     for i in dataFrame.index:
         
@@ -64,11 +66,11 @@ def activityInYear(dateFrame, year):
             
             # If the end date is in the target year, we want to know what proportion of the year has passed before the activity ended
             elif dataFrame.at[i, 'end-actual'].year == year:
-                dataFrame.at[i, 'date-in-year'] = proporYearGone(dataFrame, dataFrame.at[i, 'end-actual'])
+                dataFrame.at[i, 'date-in-year'] = min(1, proporYearGone(dataFrame.at[i, 'end-actual']))
                 
             # If the start date is in the target year, we want to know what proportion of the year remains over which the activity will be active 
             elif dataFrame.at[i, 'start-actual'].year == year:
-                dataFrame.at[i, 'date-in-year'] = proporYearToGo(dataFrame, dataFrame.at[i, 'start-actual'])
+                dataFrame.at[i, 'date-in-year'] = min(1, proporYearToGo(dataFrame.at[i, 'start-actual']))
             
             # Otherwise, the activity was not active during the target year
             else:
@@ -87,11 +89,11 @@ def activityInYear(dateFrame, year):
             
             # If the end date is in the target year, we want to know what proportion of the year has passed before the activity ended
             elif dataFrame.at[i, 'end-planned'].year == year:
-                dataFrame.at[i, 'date-in-year'] = proporYearGone(dataFrame, dataFrame.at[i, 'end-planned'])
+                dataFrame.at[i, 'date-in-year'] = min(1, proporYearGone(dataFrame.at[i, 'end-planned']))
                 
             # If the start date is in the target year, we want to know what proportion of the year remains over which the activity will be active 
             elif dataFrame.at[i, 'start-actual'].year == year:
-                dataFrame.at[i, 'date-in-year'] = proporYearToGo(dataFrame, dataFrame.at[i, 'start-actual'])
+                dataFrame.at[i, 'date-in-year'] = min(1, proporYearToGo(dataFrame.at[i, 'start-actual']))
             
             # Otherwise, the activity was not active during the target year
             else:
@@ -110,15 +112,45 @@ def activityInYear(dateFrame, year):
             
             # If the end date is in the target year, we want to know what proportion of the year has passed before the activity ended
             elif dataFrame.at[i, 'end-planned'].year == year:
-                dataFrame.at[i, 'date-in-year'] = proporYearGone(dataFrame, dataFrame.at[i, 'end-planned'])
+                dataFrame.at[i, 'date-in-year'] = min(1, proporYearGone(dataFrame.at[i, 'end-planned']))
                 
             # If the start date is in the target year, we want to know what proportion of the year remains over which the activity will be active 
             elif dataFrame.at[i, 'start-planned'].year == year:
-                dataFrame.at[i, 'date-in-year'] = proporYearToGo(dataFrame, dataFrame.at[i, 'start-planned'])
+                dataFrame.at[i, 'date-in-year'] = min(1, proporYearToGo(dataFrame.at[i, 'start-planned']))
             
             # Otherwise, the activity was not active during the target year
             else:
                 dataFrame.at[i, 'date-in-year'] = 0
 
-
+def sectorPercentage(target_sectors, activity_sectors, sector_percentages):
+    # target_sectors is a list of the sectors which we want included in our results
+    # 
+    
+    results = [False] * len(activity_sectors)
+    
+    for sector in target_sectors:
+        for item in activity_sectors:
+            if sector == item:
+                results[activity_sectors.index(item)] = True
+    
+    sum_percents = 0
+    
+    for i in range(len(results)):
         
+        if results[i]:
+            if pd.isnull(sector_percentages):
+                sum_percents = 1
+            else:
+                sum_percents += int(sector_percentages[i])
+    
+    return sum_percents / 100
+
+def applySectorPercentages(dataFrame, target_sectors):
+    
+    for i in dataFrame.index:
+        
+        dataFrame.at[i, 'target-sectors-percentage'] = sectorPercentage(target_sectors, \
+                                                        str(dataFrame.at[i, 'sector-code']).split(';'),
+                                                        str(dataFrame.at[i, 'sector-percentage']).split(';'))
+        
+
