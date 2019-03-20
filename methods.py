@@ -140,6 +140,8 @@ def sectorPercentage(target_sectors, activity_sectors, sector_percentages):
         if results[i]:
             if pandas.isnull(sector_percentages):
                 sum_percents = 1
+            elif sector_percentages[i] == '':
+                sum_percents = 1
             else:
                 sum_percents += int(sector_percentages[i])
     
