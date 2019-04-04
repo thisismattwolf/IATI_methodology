@@ -134,15 +134,15 @@ def data_investigate(data, sectors, keywords):
         print(df.groupby(['reporting-org'])['total-Commitment'].sum())
         print()
     
-    print("For full data set:")
+    print("1. FOR FULL DATA SET:")
     print_stats(data)
-    print("For data filtered by sectors:")
+    print("2. FOR SECTOR-FILTERED DATA:")
     print_stats(sectors_data)
-    print("For data filtered by keywords:")
+    print("3. FOR KEYWORD-FILTERED DATA:")
     print_stats(keywords_data)
-    print("For inner join of sector-filtered data and keyword-filtered data:")
+    print("4. FOR INNER JOIN OF SECTOR/KEYWORD-FILTERED DATA:")
     print_stats(inner)
-    print("For outer join of sector-filtered data and keyword-filtered data:")
+    print("5. FOR OUTER JOIN OF SECTOR/KEYWORD-FILTERED DATA:")
     print_stats(outer)
     
 
