@@ -21,6 +21,10 @@ def data_setup():
                    'start-actual', 'end-actual','recipient-country-code','recipient-country', 'recipient-country-percentage',\
                    'sector','sector-code', 'sector-percentage','sector-vocabulary','sector-vocabulary-code', 'default-currency',\
                    'total-Commitment','total-Disbursement','total-Expenditure']
+    
+    # list of fields to import as datetimes
+    date_fields = ['start-planned','end-planned','start-actual','end-actual']
+    
     # dictionary of default NaN values for each of these columns
     field_nas =   {'iati-identifier':"",'reporting-org':"",'default-language':"", 'title':"",'description':"",'start-planned':"",'end-planned':"",\
                    'start-actual':"", 'end-actual':"",'recipient-country-code':"",'recipient-country':"", 'recipient-country-percentage':"",\
@@ -29,14 +33,14 @@ def data_setup():
     
     # locally saved CSV files for each of the eight donors
     #TODO - convert these read_csv calls to one or several IATI API call(s)
-    wbg_raw = pd.read_csv('WBG_IATI_Activities_20190315.csv', low_memory=False, usecols=iati_fields)
-    dfid_raw = pd.read_csv('DFID_IATI_Activities_20190315.csv', low_memory=False, usecols=iati_fields)
-    sida_raw = pd.read_csv('SIDA_IATI_Activities_20190315.csv', low_memory=False, usecols=iati_fields)
-    bmgf_raw = pd.read_csv('BMGF_IATI_Activities_20190315.csv', low_memory=False, usecols=iati_fields)
-    devco_raw = pd.read_csv('DEVCO_IATI_Activities_20190315.csv', low_memory=False, usecols=iati_fields)
-    gac_raw = pd.read_csv('GAC_IATI_Activities_20190315.csv', low_memory=False, usecols=iati_fields)
-    gf_raw = pd.read_csv('Global_Fund_IATI_Activities_20190315.csv', low_memory=False, usecols=iati_fields)
-    MFANe_raw = pd.read_csv('MFA_Netherlands_IATI_Activities_20190315.csv', low_memory=False, usecols=iati_fields)
+    wbg_raw = pd.read_csv('WBG_IATI_Activities_20190315.csv', low_memory=False, usecols=iati_fields, parse_dates=date_fields)
+    dfid_raw = pd.read_csv('DFID_IATI_Activities_20190315.csv', low_memory=False, usecols=iati_fields, parse_dates=date_fields)
+    sida_raw = pd.read_csv('SIDA_IATI_Activities_20190315.csv', low_memory=False, usecols=iati_fields, parse_dates=date_fields)
+    bmgf_raw = pd.read_csv('BMGF_IATI_Activities_20190315.csv', low_memory=False, usecols=iati_fields, parse_dates=date_fields)
+    devco_raw = pd.read_csv('DEVCO_IATI_Activities_20190315.csv', low_memory=False, usecols=iati_fields, parse_dates=date_fields)
+    gac_raw = pd.read_csv('GAC_IATI_Activities_20190315.csv', low_memory=False, usecols=iati_fields, parse_dates=date_fields)
+    gf_raw = pd.read_csv('Global_Fund_IATI_Activities_20190315.csv', low_memory=False, usecols=iati_fields, parse_dates=date_fields)
+    MFANe_raw = pd.read_csv('MFA_Netherlands_IATI_Activities_20190315.csv', low_memory=False, usecols=iati_fields, parse_dates=date_fields)
     
     #concatenate the data from each donor
     dfs = [wbg_raw, dfid_raw, sida_raw, bmgf_raw, devco_raw, dfid_raw, gac_raw, gf_raw, MFANe_raw]
@@ -60,6 +64,9 @@ def data_setup():
     
     #fill in using the dict specified above
     data.fillna(value=field_nas)
+    
+    data = data.reset_index()
+    del data['index']
     
     return data
     
@@ -98,7 +105,12 @@ def data_keywords(data, keywords):
         results = pd.concat([results, temp], ignore_index=True, sort=False)
         
     return results
+
+def data_dates(data, startdate, enddate):
+    pass
+
     
+
 # =============================================================================
 # def data_psa_tag(data, psa_dict):
 #     
