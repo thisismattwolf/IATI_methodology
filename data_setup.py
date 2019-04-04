@@ -7,17 +7,28 @@ Created on Wed Apr  3 10:22:31 2019
 import pandas as pd
 
 def data_setup():
+    
+    """======================================
+    This function loads and cleans IATI data from eight donors in preparation for 
+    ANDE Methodology testing. This includes renaming the donors in the data, 
+    deleting some incomplete rows of WBG data, and filling in blanks
+    ======================================"""
+    
     import pandas as pd
     
+    # list of fields we to keep
     iati_fields = ['iati-identifier','reporting-org','default-language', 'title','description','start-planned','end-planned',\
                    'start-actual', 'end-actual','recipient-country-code','recipient-country', 'recipient-country-percentage',\
                    'sector','sector-code', 'sector-percentage','sector-vocabulary','sector-vocabulary-code', 'default-currency',\
                    'total-Commitment','total-Disbursement','total-Expenditure']
+    # dictionary of default NaN values for each of these columns
     field_nas =   {'iati-identifier':"",'reporting-org':"",'default-language':"", 'title':"",'description':"",'start-planned':"",'end-planned':"",\
                    'start-actual':"", 'end-actual':"",'recipient-country-code':"",'recipient-country':"", 'recipient-country-percentage':"",\
                    'sector':"",'sector-code':"", 'sector-percentage':"",'sector-vocabulary':"",'sector-vocabulary-code':"", 'default-currency':"",\
                    'total-Commitment':0,'total-Disbursement':0,'total-Expenditure':0}
     
+    # locally saved CSV files for each of the eight donors
+    #TODO - convert these read_csv calls to one or several IATI API call(s)
     wbg_raw = pd.read_csv('WBG_IATI_Activities_20190315.csv', low_memory=False, usecols=iati_fields)
     dfid_raw = pd.read_csv('DFID_IATI_Activities_20190315.csv', low_memory=False, usecols=iati_fields)
     sida_raw = pd.read_csv('SIDA_IATI_Activities_20190315.csv', low_memory=False, usecols=iati_fields)
@@ -27,11 +38,11 @@ def data_setup():
     gf_raw = pd.read_csv('Global_Fund_IATI_Activities_20190315.csv', low_memory=False, usecols=iati_fields)
     MFANe_raw = pd.read_csv('MFA_Netherlands_IATI_Activities_20190315.csv', low_memory=False, usecols=iati_fields)
     
+    #concatenate the data from each donor
     dfs = [wbg_raw, dfid_raw, sida_raw, bmgf_raw, devco_raw, dfid_raw, gac_raw, gf_raw, MFANe_raw]
-    
     data = pd.concat(dfs, ignore_index=True, sort=False)
     
-    #Change names of reporting-orgs to abbreviations for simplicity
+    #Change names of reporting-orgs to donor shortnames for simplicity
     data.loc[data['reporting-org'] == 'Sweden', 'reporting-org'] = 'Sida'
     data.loc[data['reporting-org'] == 'Department for International Development', 'reporting-org'] = 'DFID'
     data.loc[data['reporting-org'] == 'European Commission - Development and Cooperation-EuropeAid', 'reporting-org'] = 'DEVCO'
@@ -54,15 +65,30 @@ def data_setup():
     
 def data_sectors(data, sectors):
     
+    """======================================
+    This function takes a list of strings, each representing a IATI sector-code
+    from any sector vocabulary. It filters the data and keeps any rows that are
+    tagged with these sectors
+    ======================================"""
+    
     import pandas as pd
     results = pd.DataFrame()
     for sector in sectors:
-        temp = data[data['sector-code'].str.contains(sector, na=False)]
+        #for i in data.index:
+         #   print(sector + " in " + str(data.at[i,'sector-code']) + " ?")
+          #  print(sector in str(data.at[i,'sector-code']))
+        temp = data[data['sector-code'].astype('str').str.contains(sector, na=False)]
         results = pd.concat([results, temp], ignore_index=True, sort=False)
 
     return results
     
 def data_keywords(data, keywords):   
+    
+    """======================================
+    This function takes a list of strings, each representing a text keyword in
+    ALL LOWERCASE text. It filters the data by checking the title and description
+    of each row for each keyword, keeping any rows where are least one keyword.
+    ======================================"""
     
     import pandas as pd
     results = pd.DataFrame()
@@ -81,6 +107,17 @@ def data_keywords(data, keywords):
 # =============================================================================
 
 def data_investigate(data, sectors, keywords):
+    
+    """======================================
+    This function runs some diagnostic tests, for certain data, sectors, and
+    keywords inputs. It shows how large the original dataset is, and its 
+    breakdown by # of rows and sum of total funding commitments by donor, and
+    shows this same breakdown again for the data after:
+        1. Applying just the sector filter
+        2. Applying just the keyword filter
+        3. Inner joining the sector-filtered and keyword-filtered data
+        4. Outer joining the sector-filtered and keyword-filtered data
+    ======================================"""
     
     sectors_data = data_sectors(data, sectors)
     keywords_data = data_keywords(data, keywords)
@@ -121,6 +158,3 @@ keywords = ["reproductive", "family planning", "contraceptive", "abortion", \
             "m-Health", "e-Health", "mobile health","health data", "medical products"\
             "health products", "medical services", "health services", "clinical studies"\
             "clinical trials", "medicine", "vaccine"]
-data = data_setup()
-
-data_investigate(data, sectors, keywords)
